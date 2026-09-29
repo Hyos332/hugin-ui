@@ -196,6 +196,18 @@ export default function BusTUSWidget() {
             ))}
           </div>
         </div>
+
+        {/* Service Summary Info Box */}
+        <div style={{ marginTop: '12px', background: 'var(--bg-inner)', border: '1px solid var(--border-subtle)', padding: '10px 14px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.92rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', fontWeight: 600 }}>
+            <span>🚍 Frecuencia Estimada:</span>
+            <strong style={{ color: 'var(--orange-primary)', fontFamily: 'var(--font-mono)' }}>8 - 12 min</strong>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', fontWeight: 600 }}>
+            <span>📍 Paradas PCTCAN:</span>
+            <strong style={{ color: 'var(--text-primary)' }}>488 (L1) • 487 (L1, L13)</strong>
+          </div>
+        </div>
       </div>
     </div>
   );
