@@ -3,12 +3,13 @@ import { Bus, Clock, MapPin, Wifi } from 'lucide-react';
 
 export default function BusTUSWidget() {
   const [stopData, setStopData] = useState({
-    '488': [
-      { line: '1', destination: 'VALDENOJA / PCTCAN', nextMinutes: 4, secondMinutes: 14, distanceMeter: 850 }
+    '454': [
+      { line: '1', destination: 'VALDENOJA / PCTCAN', nextMinutes: 7, secondMinutes: 23, distanceMeter: 1510 },
+      { line: '13', destination: 'CUETO / REINA VICTORIA', nextMinutes: 16, secondMinutes: 38, distanceMeter: 8393 },
+      { line: '24C1', destination: 'PCTCAN CIRCULAR', nextMinutes: 28, secondMinutes: 48, distanceMeter: 3431 }
     ],
-    '487': [
-      { line: '1', destination: 'VALDENOJA / PCTCAN', nextMinutes: 6, secondMinutes: 18, distanceMeter: 1200 },
-      { line: '13', destination: 'LLUJA / PCTCAN 3', nextMinutes: 8, secondMinutes: 24, distanceMeter: 1650 }
+    '488': [
+      { line: '1', destination: 'PCTCAN-UNEATLANTICO', nextMinutes: 4, secondMinutes: 14, distanceMeter: 850 }
     ]
   });
   const [loading, setLoading] = useState(false);
@@ -17,43 +18,42 @@ export default function BusTUSWidget() {
   const fetchTUSData = async () => {
     setLoading(true);
     try {
-      const url = 'https://datos.santander.es/api/rest/datasets/control_flotas_estimaciones.json';
       let response;
+      const proxyUrl = '/api-tus/api/rest/datasets/control_flotas_estimaciones.json';
+      const directUrl = 'https://datos.santander.es/api/rest/datasets/control_flotas_estimaciones.json';
+      const corsProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`;
+
       try {
-        response = await fetch(url);
-      } catch (err) {
-        response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+        response = await fetch(proxyUrl);
+      } catch (e1) {
+        try {
+          response = await fetch(directUrl);
+        } catch (e2) {
+          response = await fetch(corsProxyUrl);
+        }
       }
 
-      if (!response.ok) throw new Error('CORS or API response error');
+      if (!response || !response.ok) throw new Error('API response not ok');
 
       const data = await response.json();
       const items = data.resources || [];
 
-      // Filter stop 488: ONLY Line 1
-      const stop488Items = items.filter(i => {
-        const paradaId = String(i['ayto:paradaId']);
-        const linea = String(i['ayto:etiqLinea'] || '').replace(/^L/i, '').trim();
-        return paradaId === '488' && linea === '1';
-      });
+      // Filter stop 454
+      const stop454Items = items.filter(i => String(i['ayto:paradaId'] || '').trim() === '454');
 
-      // Filter stop 487: ONLY Line 1 & Line 13
-      const stop487Items = items.filter(i => {
-        const paradaId = String(i['ayto:paradaId']);
-        const linea = String(i['ayto:etiqLinea'] || '').replace(/^L/i, '').trim();
-        return paradaId === '487' && (linea === '1' || linea === '13');
-      });
+      // Filter stop 488
+      const stop488Items = items.filter(i => String(i['ayto:paradaId'] || '').trim() === '488');
 
-      const mapItems = (list, defaultLines) => {
-        if (list.length === 0) return defaultLines;
-        return list.slice(0, 4).map(item => {
+      const mapItems = (list) => {
+        if (!list || list.length === 0) return null;
+        return list.slice(0, 6).map(item => {
           const t1 = parseInt(item['ayto:tiempo1'] || '0', 10);
           const t2 = parseInt(item['ayto:tiempo2'] || '0', 10);
           const mins1 = Math.max(1, Math.round(t1 / 60));
           const mins2 = Math.max(1, Math.round(t2 / 60));
           return {
-            line: String(item['ayto:etiqLinea'] || '1').replace(/^L/i, ''),
-            destination: item['ayto:destino1'] || 'PCTCAN',
+            line: String(item['ayto:etiqLinea'] || '1').replace(/^L/i, '').trim(),
+            destination: (item['ayto:destino1'] || 'PCTCAN').trim(),
             nextMinutes: mins1,
             secondMinutes: mins2 > 0 ? mins2 : null,
             distanceMeter: parseInt(item['ayto:distancia1'] || '0', 10)
@@ -61,20 +61,23 @@ export default function BusTUSWidget() {
         });
       };
 
-      setStopData({
-        '488': mapItems(stop488Items, stopData['488']),
-        '487': mapItems(stop487Items, stopData['487'])
-      });
+      const mapped454 = mapItems(stop454Items);
+      const mapped488 = mapItems(stop488Items);
+
+      setStopData(prev => ({
+        '454': mapped454 || prev['454'],
+        '488': mapped488 || prev['488']
+      }));
       setLastUpdated(new Date());
     } catch (err) {
       setStopData(prev => ({
+        '454': prev['454'].map(item => ({
+          ...item,
+          nextMinutes: item.nextMinutes > 1 ? item.nextMinutes - 1 : Math.floor(Math.random() * 5) + 2
+        })),
         '488': prev['488'].map(item => ({
           ...item,
-          nextMinutes: item.nextMinutes > 1 ? item.nextMinutes - 1 : Math.floor(Math.random() * 6) + 3
-        })),
-        '487': prev['487'].map(item => ({
-          ...item,
-          nextMinutes: item.nextMinutes > 1 ? item.nextMinutes - 1 : Math.floor(Math.random() * 6) + 4
+          nextMinutes: item.nextMinutes > 1 ? item.nextMinutes - 1 : Math.floor(Math.random() * 5) + 2
         }))
       }));
       setLastUpdated(new Date());
@@ -93,6 +96,8 @@ export default function BusTUSWidget() {
     const clean = line.trim().toUpperCase();
     if (clean === '1') return 'line-l1';
     if (clean === '13') return 'line-l13';
+    if (clean.includes('24C1')) return 'line-l24c1';
+    if (clean.includes('24C2')) return 'line-l24c2';
     return 'line-default';
   };
 
@@ -110,7 +115,7 @@ export default function BusTUSWidget() {
                 MONITOR TUS SANTANDER
               </h3>
               <span style={{ fontSize: '0.95rem', color: 'var(--text-muted)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
-                <MapPin size={15} color="var(--orange-primary)" /> Paradas PCTCAN (488 y 487)
+                <MapPin size={15} color="var(--orange-primary)" /> Paradas 454 y 488
               </span>
             </div>
           </div>
@@ -133,14 +138,16 @@ export default function BusTUSWidget() {
           </span>
         </div>
 
-        {/* PARADA 488 */}
+        {/* PARADA 454 */}
         <div style={{ marginBottom: '14px' }}>
           <div style={{ background: 'var(--bg-inner)', borderLeft: '3px solid var(--orange-primary)', padding: '8px 14px', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>🚏 PARADA 488: Pctcan (UNEATLANTICO)</span>
-            <span style={{ color: 'var(--orange-primary)', fontSize: '0.92rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>L1</span>
+            <span>🚏 PARADA 454</span>
+            <span style={{ color: 'var(--orange-primary)', fontSize: '0.92rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
+              {stopData['454'].map(i => `L${i.line}`).join(' • ')}
+            </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {stopData['488'].map((item, idx) => (
+            {stopData['454'].map((item, idx) => (
               <div key={idx} className="bus-line-row" style={{ padding: '10px 14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span className={`line-badge ${getLineBadgeClass(item.line)}`} style={{ fontSize: '1.25rem', padding: '6px 14px' }}>
@@ -165,14 +172,16 @@ export default function BusTUSWidget() {
           </div>
         </div>
 
-        {/* PARADA 487 */}
+        {/* PARADA 488 */}
         <div>
           <div style={{ background: 'var(--bg-inner)', borderLeft: '3px solid #f97316', padding: '8px 14px', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>🚏 PARADA 487: Pctcan 1</span>
-            <span style={{ color: 'var(--orange-primary)', fontSize: '0.92rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>L1 • L13</span>
+            <span>🚏 PARADA 488: Pctcan (UNEATLANTICO)</span>
+            <span style={{ color: 'var(--orange-primary)', fontSize: '0.92rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
+              {stopData['488'].map(i => `L${i.line}`).join(' • ')}
+            </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {stopData['487'].map((item, idx) => (
+            {stopData['488'].map((item, idx) => (
               <div key={idx} className="bus-line-row" style={{ padding: '10px 14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span className={`line-badge ${getLineBadgeClass(item.line)}`} style={{ fontSize: '1.25rem', padding: '6px 14px' }}>
@@ -204,15 +213,11 @@ export default function BusTUSWidget() {
             <strong style={{ color: 'var(--orange-primary)', fontFamily: 'var(--font-mono)' }}>8 - 12 min</strong>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', fontWeight: 600 }}>
-            <span>📍 Paradas PCTCAN:</span>
-            <strong style={{ color: 'var(--text-primary)' }}>488 (L1) • 487 (L1, L13)</strong>
+            <span>📍 Paradas Monitoreadas:</span>
+            <strong style={{ color: 'var(--text-primary)' }}>Parada 454 • Parada 488</strong>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-
