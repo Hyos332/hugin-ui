@@ -138,16 +138,16 @@ export default function BusTUSWidget() {
           </span>
         </div>
 
-        {/* PARADA 454 */}
-        <div style={{ marginBottom: '14px' }}>
-          <div style={{ background: 'var(--bg-inner)', borderLeft: '3px solid var(--orange-primary)', padding: '8px 14px', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>🚏 PARADA 454</span>
+        {/* PARADA 488 */}
+        <div>
+          <div style={{ background: 'var(--bg-inner)', borderLeft: '3px solid #f97316', padding: '8px 14px', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>🚏 PARADA 488: Pctcan (UNEATLANTICO)</span>
             <span style={{ color: 'var(--orange-primary)', fontSize: '0.92rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-              {stopData['454'].map(i => `L${i.line}`).join(' • ')}
+              {stopData['488'].map(i => `L${i.line}`).join(' • ')}
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {stopData['454'].map((item, idx) => (
+            {stopData['488'].map((item, idx) => (
               <div key={idx} className="bus-line-row" style={{ padding: '10px 14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span className={`line-badge ${getLineBadgeClass(item.line)}`} style={{ fontSize: '1.25rem', padding: '6px 14px' }}>
@@ -172,16 +172,16 @@ export default function BusTUSWidget() {
           </div>
         </div>
 
-        {/* PARADA 488 */}
-        <div>
-          <div style={{ background: 'var(--bg-inner)', borderLeft: '3px solid #f97316', padding: '8px 14px', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>🚏 PARADA 488: Pctcan (UNEATLANTICO)</span>
+        {/* PARADA 454 */}
+        <div style={{ marginBottom: '14px' }}>
+          <div style={{ background: 'var(--bg-inner)', borderLeft: '3px solid var(--orange-primary)', padding: '8px 14px', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>🚏 PARADA 454</span>
             <span style={{ color: 'var(--orange-primary)', fontSize: '0.92rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-              {stopData['488'].map(i => `L${i.line}`).join(' • ')}
+              {stopData['454'].map(i => `L${i.line}`).join(' • ')}
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {stopData['488'].map((item, idx) => (
+            {stopData['454'].map((item, idx) => (
               <div key={idx} className="bus-line-row" style={{ padding: '10px 14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span className={`line-badge ${getLineBadgeClass(item.line)}`} style={{ fontSize: '1.25rem', padding: '6px 14px' }}>
