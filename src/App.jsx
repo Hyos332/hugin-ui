@@ -40,16 +40,16 @@ export default function App() {
           ></div>
         </div>
 
-        {/* Minimalist Executive Header */}
+        {/* Executive Header */}
         <header className="dashboard-header">
           <div className="brand-badge">
             <div className="brand-icon-wrapper">
-              <Activity size={20} />
+              <Activity size={24} />
             </div>
             <div>
               <div className="brand-title">
                 HUGIN CONTROL CENTER
-                <span style={{ fontSize: '0.75rem', padding: '2px 8px', background: 'var(--orange-subtle)', border: '1px solid var(--orange-border)', borderRadius: '6px', color: 'var(--orange-primary)', fontWeight: 700 }}>
+                <span style={{ fontSize: '0.85rem', padding: '3px 10px', background: 'var(--orange-subtle)', border: '1px solid var(--orange-border)', borderRadius: '6px', color: 'var(--orange-primary)', fontWeight: 700 }}>
                   EQUIPO FÉNIX
                 </span>
               </div>
@@ -59,46 +59,46 @@ export default function App() {
             </div>
           </div>
 
-          {/* Minimalist Nav Tabs */}
+          {/* Nav Tabs */}
           <div className="nav-tabs">
             <button
               className={`tab-btn ${activeTab === 'fenix' ? 'active' : ''}`}
               onClick={() => { setActiveTab('fenix'); setSlideTimer(15); }}
             >
-              <Flame size={18} /> Planificación Fénix
+              <Flame size={20} /> Planificación Fénix
             </button>
             <button
               className={`tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
               onClick={() => { setActiveTab('projects'); setSlideTimer(15); }}
             >
-              <LayoutGrid size={18} /> Proyectos Activos ({projects.length})
+              <LayoutGrid size={20} /> Proyectos Activos ({projects.length})
             </button>
           </div>
 
-          {/* Minimalist Projection Status Badge */}
+          {/* Projection Status Badge */}
           <div
             style={{
               background: 'var(--bg-inner)',
               border: '1px solid var(--border-subtle)',
-              padding: '6px 14px',
+              padding: '8px 16px',
               borderRadius: '10px',
-              fontSize: '0.85rem',
+              fontSize: '0.95rem',
               color: 'var(--text-secondary)',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px'
+              gap: '12px'
             }}
           >
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Monitor size={18} color="var(--orange-primary)" />
-              <span style={{ position: 'absolute', top: -1, right: -1, width: 6, height: 6, borderRadius: '50%', background: 'var(--orange-primary)' }}></span>
+              <Monitor size={20} color="var(--orange-primary)" />
+              <span style={{ position: 'absolute', top: -1, right: -1, width: 7, height: 7, borderRadius: '50%', background: 'var(--orange-primary)' }}></span>
             </div>
             <div>
-              <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.1 }}>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.1 }}>
                 Proyección TV
               </div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
-                <Clock size={12} color="var(--orange-primary)" /> Rotación: <strong style={{ color: 'var(--orange-primary)', fontFamily: 'var(--font-mono)' }}>{slideTimer}s</strong>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
+                <Clock size={13} color="var(--orange-primary)" /> Rotación: <strong style={{ color: 'var(--orange-primary)', fontFamily: 'var(--font-mono)' }}>{slideTimer}s</strong>
               </div>
             </div>
           </div>
