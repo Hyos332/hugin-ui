@@ -15,7 +15,7 @@ export const INITIAL_REVIEW = {
 export const INITIAL_SPRINT_GOAL = {
   id: 'sprint-goal-1',
   code: 'SPRINT-ACTUAL',
-  title: '🎯 Objetivo del Sprint',
+  title: 'Objetivo del Sprint',
   description: 'Lanzar una primera aproximación del proyecto MAHINE y actualizar la base de datos de NUTRIX nuevo para incluir diferentes fuentes de alimentos.',
 };
 

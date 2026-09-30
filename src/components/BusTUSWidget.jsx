@@ -141,7 +141,7 @@ export default function BusTUSWidget() {
         {/* PARADA 488 */}
         <div>
           <div style={{ background: 'var(--bg-inner)', borderLeft: '3px solid #f97316', padding: '8px 14px', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>🚏 PARADA 488: Pctcan (UNEATLANTICO)</span>
+            <span>PARADA 488: Pctcan (UNEATLANTICO)</span>
             <span style={{ color: 'var(--orange-primary)', fontSize: '0.92rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
               {stopData['488'].map(i => `L${i.line}`).join(' • ')}
             </span>
@@ -175,7 +175,7 @@ export default function BusTUSWidget() {
         {/* PARADA 454 */}
         <div style={{ marginBottom: '14px' }}>
           <div style={{ background: 'var(--bg-inner)', borderLeft: '3px solid var(--orange-primary)', padding: '8px 14px', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>🚏 PARADA 454</span>
+            <span>PARADA 454</span>
             <span style={{ color: 'var(--orange-primary)', fontSize: '0.92rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
               {stopData['454'].map(i => `L${i.line}`).join(' • ')}
             </span>
@@ -203,18 +203,6 @@ export default function BusTUSWidget() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Service Summary Info Box */}
-        <div style={{ marginTop: '12px', background: 'var(--bg-inner)', border: '1px solid var(--border-subtle)', padding: '10px 14px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.92rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', fontWeight: 600 }}>
-            <span>🚍 Frecuencia Estimada:</span>
-            <strong style={{ color: 'var(--orange-primary)', fontFamily: 'var(--font-mono)' }}>8 - 12 min</strong>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', fontWeight: 600 }}>
-            <span>📍 Paradas Monitoreadas:</span>
-            <strong style={{ color: 'var(--text-primary)' }}>Parada 454 • Parada 488</strong>
           </div>
         </div>
       </div>
