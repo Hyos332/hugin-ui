@@ -1,14 +1,22 @@
-// Calculate next Sprint Planning / Review (Wednesday, Sept 30 2026 at 16:00:00)
+// Calculate next Sprint Planning / Review (Thursdays every 2 weeks at 14:30:00, next on Oct 15 2026)
 const getNextSprintReview = () => {
-  const target = new Date('2026-09-30T16:00:00');
-  return target.toISOString();
+  const baseDate = new Date('2026-10-15T14:30:00');
+  const now = new Date();
+  if (now <= baseDate) {
+    return baseDate.toISOString();
+  }
+  const msPerTwoWeeks = 14 * 24 * 60 * 60 * 1000;
+  const elapsedMs = now.getTime() - baseDate.getTime();
+  const intervalsPassed = Math.ceil(elapsedMs / msPerTwoWeeks);
+  const nextDate = new Date(baseDate.getTime() + intervalsPassed * msPerTwoWeeks);
+  return nextDate.toISOString();
 };
 
 export const INITIAL_REVIEW = {
   id: 'review-1',
   title: 'Próximo Sprint Planning / Review',
   targetDate: getNextSprintReview(),
-  scheduleText: 'Los miércoles cada 2 semanas a las 16:00',
+  scheduleText: 'Los jueves cada 2 semanas a las 14:30',
   location: 'Sala de Reuniones Fénix / Pantalla Principal'
 };
 
@@ -16,7 +24,13 @@ export const INITIAL_SPRINT_GOAL = {
   id: 'sprint-goal-1',
   code: 'SPRINT-ACTUAL',
   title: 'Objetivo del Sprint',
-  description: 'Lanzar una primera aproximación del proyecto MAHINE y actualizar la base de datos de NUTRIX nuevo para incluir diferentes fuentes de alimentos.',
+  description: 'Resolver incidencias de la plataforma MLS, levantar el nuevo módulo de historial dietético en el backend, diseñar los mockups de historial dietético y clínico, y avanzar con el Entregable #7 de Residencia Nuevo.',
+  deliverables: [
+    { id: 'del-1', tag: 'MLS', title: 'Resolución de incidencias de la plataforma' },
+    { id: 'del-2', tag: 'NUTRIX Backend', title: 'Módulo de Historial Dietético' },
+    { id: 'del-3', tag: 'Diseño / UI', title: 'Mockups de Historial Dietético y Clínico' },
+    { id: 'del-4', tag: 'Residencia Nuevo', title: 'Entregable #7' },
+  ]
 };
 
 export const INITIAL_PROJECTS = [
@@ -68,9 +82,9 @@ export const INITIAL_PROJECTS = [
     id: 'proj-5',
     code: 'RESID-NUEVO',
     title: 'Residencia Nuevo',
-    version: 'Entregable 5',
+    version: 'Entregable 7',
     status: 'en_progreso',
-    lastUpdate: 'Entregable 5',
+    lastUpdate: 'Entregable 7',
     nextDeploy: '10/2026 (Tentativo)',
     color: 'pink',
     rotation: -1.0,

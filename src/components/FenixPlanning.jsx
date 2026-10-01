@@ -145,20 +145,19 @@ export default function FenixPlanning() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ background: 'var(--bg-inner)', border: '1px solid var(--border-subtle)', padding: '10px 14px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.02rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              <CheckCircle2 size={18} color="#4ade80" />
-              <span><strong>MAHINE:</strong> Release v0.1.0 Dev</span>
-            </div>
-
-            <div style={{ background: 'var(--bg-inner)', border: '1px solid var(--border-subtle)', padding: '10px 14px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.02rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              <CheckCircle2 size={18} color="#4ade80" />
-              <span><strong>NUTRIX Nuevo:</strong> Actualización BD Alimentos</span>
-            </div>
-
-            <div style={{ background: 'var(--bg-inner)', border: '1px solid var(--border-subtle)', padding: '10px 14px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.02rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              <FileText size={18} color="var(--orange-primary)" />
-              <span><strong>QA & Tests:</strong> Cobertura de Integración</span>
-            </div>
+            {sprintGoal.deliverables && sprintGoal.deliverables.length > 0 ? (
+              sprintGoal.deliverables.map((item) => (
+                <div key={item.id} style={{ background: 'var(--bg-inner)', border: '1px solid var(--border-subtle)', padding: '10px 14px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.02rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  <CheckCircle2 size={18} color="#4ade80" />
+                  <span><strong>{item.tag}:</strong> {item.title}</span>
+                </div>
+              ))
+            ) : (
+              <div style={{ background: 'var(--bg-inner)', border: '1px solid var(--border-subtle)', padding: '10px 14px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.02rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                <CheckCircle2 size={18} color="#4ade80" />
+                <span>Sprint Goal actualizado</span>
+              </div>
+            )}
           </div>
         </div>
 
