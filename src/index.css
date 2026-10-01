@@ -405,5 +405,479 @@ html, body {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
+.voice-status-badge {
+  background: var(--bg-inner);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.voice-status-badge.online {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.55);
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.voice-status-badge.offline {
+  color: #fda4af;
+  border-color: rgba(244, 63, 94, 0.55);
+  background: rgba(244, 63, 94, 0.14);
+}
+
+.voice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  --voice-accent: #22d3ee;
+  --voice-accent-2: #38bdf8;
+}
+
+.voice-theme-orange {
+  --voice-accent: #f59e0b;
+  --voice-accent-2: #fb7185;
+}
+
+.voice-theme-green {
+  --voice-accent: #4ade80;
+  --voice-accent-2: #2dd4bf;
+}
+
+.voice-theme-purple {
+  --voice-accent: #c084fc;
+  --voice-accent-2: #f0abfc;
+}
+
+.voice-theme-blue {
+  --voice-accent: #38bdf8;
+  --voice-accent-2: #818cf8;
+}
+
+.voice-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.04), rgba(7, 10, 18, 0.82) 58%, rgba(5, 7, 12, 0.94)),
+    linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(244, 63, 94, 0.08));
+  animation: voice-fade-in 0.28s ease-out both;
+}
+
+.voice-rings {
+  position: absolute;
+  width: min(72vw, 780px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.voice-rings span {
+  position: absolute;
+  inset: 0;
+  border: 2px solid color-mix(in srgb, var(--voice-accent) 70%, transparent);
+  border-radius: 50%;
+  box-shadow: 0 0 40px color-mix(in srgb, var(--voice-accent) 30%, transparent);
+  animation: voice-ring 2.4s ease-out infinite;
+}
+
+.voice-rings span:nth-child(2) {
+  animation-delay: 0.38s;
+}
+
+.voice-rings span:nth-child(3) {
+  animation-delay: 0.76s;
+}
+
+.voice-particles {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.voice-particles i {
+  position: absolute;
+  width: 10px;
+  height: 34px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--voice-accent), transparent);
+  transform: rotate(calc(var(--particle-index) * 17deg)) translateY(-38vh);
+  transform-origin: center 38vh;
+  opacity: 0;
+  animation: voice-particle 1.6s ease-out infinite;
+  animation-delay: calc(var(--particle-index) * 0.045s);
+}
+
+.voice-command-card {
+  position: relative;
+  z-index: 2;
+  width: min(78vw, 940px);
+  min-height: 360px;
+  border: 1px solid color-mix(in srgb, var(--voice-accent) 55%, rgba(255, 255, 255, 0.14));
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(15, 17, 26, 0.84), rgba(9, 12, 20, 0.92)),
+    radial-gradient(circle at top, color-mix(in srgb, var(--voice-accent) 20%, transparent), transparent 58%);
+  box-shadow:
+    0 0 70px color-mix(in srgb, var(--voice-accent) 34%, transparent),
+    inset 0 0 60px rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+  animation: voice-card-in 0.46s cubic-bezier(0.2, 0.9, 0.2, 1.15) both;
+}
+
+.voice-command-icon {
+  width: 108px;
+  height: 108px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--voice-accent), var(--voice-accent-2));
+  box-shadow: 0 0 45px color-mix(in srgb, var(--voice-accent) 50%, transparent);
+  margin-bottom: 28px;
+}
+
+.voice-command-kicker {
+  color: var(--voice-accent);
+  font-size: 1.2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  margin-bottom: 12px;
+}
+
+.voice-command-title {
+  color: #ffffff;
+  font-size: clamp(3rem, 7vw, 6.8rem);
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.voice-command-phrase {
+  margin-top: 26px;
+  color: var(--text-secondary);
+  font-size: clamp(1.3rem, 2vw, 2rem);
+  font-weight: 800;
+  max-width: 760px;
+}
+
+.control-shell {
+  min-height: 100vh;
+  width: 100vw;
+  overflow: auto;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.15), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(74, 222, 128, 0.12), transparent 38%),
+    var(--bg-app);
+  display: grid;
+  place-items: center;
+  padding: 22px;
+}
+
+.control-panel {
+  width: min(100%, 620px);
+  border: 1px solid var(--border-card);
+  border-radius: 18px;
+  background: rgba(18, 21, 32, 0.92);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.44);
+  padding: 22px;
+}
+
+.control-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.control-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--orange-primary);
+  font-size: 0.88rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.control-header h1 {
+  font-size: clamp(2.4rem, 10vw, 4.2rem);
+  line-height: 1;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.control-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-inner);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.control-status span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--orange-primary);
+}
+
+.control-status.listening {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.6);
+}
+
+.control-status.listening span {
+  background: #4ade80;
+  animation: control-pulse 1s infinite;
+}
+
+.voice-pad {
+  display: grid;
+  place-items: center;
+  gap: 18px;
+  padding: 22px;
+  border-radius: 16px;
+  background: var(--bg-inner);
+  border: 1px solid var(--border-subtle);
+}
+
+.mic-orb {
+  width: min(54vw, 220px);
+  height: min(54vw, 220px);
+  border-radius: 50%;
+  border: 1px solid var(--orange-border);
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.26), transparent 22%),
+    linear-gradient(145deg, var(--orange-primary), #14b8a6);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 24px 55px rgba(0, 117, 168, 0.34);
+  cursor: pointer;
+}
+
+.mic-orb.active {
+  animation: control-mic 1.1s ease-in-out infinite;
+  box-shadow: 0 0 0 18px rgba(74, 222, 128, 0.1), 0 30px 70px rgba(20, 184, 166, 0.38);
+}
+
+.transcript-box {
+  min-height: 68px;
+  width: 100%;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.command-form {
+  display: grid;
+  grid-template-columns: 1fr 56px;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.command-form input {
+  height: 56px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-inner);
+  color: #ffffff;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.command-form input:focus-visible,
+.command-form button:focus-visible,
+.mic-orb:focus-visible,
+.command-tile:focus-visible {
+  outline: 3px solid rgba(56, 189, 248, 0.65);
+  outline-offset: 3px;
+}
+
+.command-form button {
+  border: 0;
+  border-radius: 12px;
+  background: var(--orange-primary);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.command-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.command-tile {
+  min-height: 74px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-inner);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 900;
+  text-align: left;
+  cursor: pointer;
+}
+
+.command-tile svg {
+  flex: 0 0 auto;
+  color: var(--tile-accent, var(--orange-primary));
+}
+
+.command-tile.theme-cyan { --tile-accent: #22d3ee; }
+.command-tile.theme-orange { --tile-accent: #f59e0b; }
+.command-tile.theme-green { --tile-accent: #4ade80; }
+.command-tile.theme-purple { --tile-accent: #c084fc; }
+.command-tile.theme-blue { --tile-accent: #38bdf8; }
+
+@keyframes voice-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes voice-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes voice-ring {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.25);
+  }
+  80% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes voice-particle {
+  0% {
+    opacity: 0;
+    transform: rotate(calc(var(--particle-index) * 17deg)) translateY(-10vh) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(calc(var(--particle-index) * 17deg)) translateY(-48vh) scale(1.08);
+  }
+}
+
+@keyframes control-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+  100% { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
+}
+
+@keyframes control-mic {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+@media (max-width: 900px) {
+  .dashboard-header {
+    gap: 10px;
+  }
+
+  .voice-status-badge span {
+    display: none;
+  }
+
+  .voice-command-card {
+    min-height: 320px;
+    padding: 30px 22px;
+    width: calc(100vw - 28px);
+  }
+
+  .voice-command-icon {
+    width: 86px;
+    height: 86px;
+    border-radius: 22px;
+  }
+}
+
+@media (max-width: 520px) {
+  .control-shell {
+    padding: 12px;
+    align-items: stretch;
+  }
+
+  .control-panel {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .control-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .control-status {
+    align-self: flex-start;
+  }
+
+  .voice-pad {
+    padding: 16px;
+  }
+
+  .command-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 

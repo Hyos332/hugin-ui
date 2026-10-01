@@ -11,15 +11,15 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: Serve application with Nginx
-FROM nginx:alpine
+# Stage 2: Serve application and local realtime channel with Node
+FROM node:20-alpine
 
-# Copy custom Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
 
-# Copy compiled dist folder from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist ./dist
+COPY server ./server
+COPY package*.json ./
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]

@@ -1,27 +1,87 @@
-import React, { useState, useEffect } from 'react';
-import { Flame, LayoutGrid, Activity, Monitor, Clock } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Flame, LayoutGrid, Activity, Monitor, Clock, Radio } from 'lucide-react';
 import FenixPlanning from './components/FenixPlanning';
 import ProjectsBoard from './components/ProjectsBoard';
+import VoiceController from './components/VoiceController';
+import VoiceOverlay from './components/VoiceOverlay';
 import { INITIAL_PROJECTS } from './data/initialData';
 
 export default function App() {
+  const isControlRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/control');
   const [activeTab, setActiveTab] = useState('fenix');
   const [projects] = useState(INITIAL_PROJECTS);
   const [slideTimer, setSlideTimer] = useState(15);
+  const [voiceBurst, setVoiceBurst] = useState(null);
+  const [voiceStatus, setVoiceStatus] = useState('connecting');
 
   useEffect(() => {
+    if (isControlRoute) return undefined;
+
     const interval = setInterval(() => {
-      setSlideTimer(prev => prev - 1);
+      setSlideTimer(prev => {
+        if (prev <= 1) {
+          setActiveTab(current => (current === 'fenix' ? 'projects' : 'fenix'));
+          return 15;
+        }
+
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isControlRoute]);
 
-  useEffect(() => {
-    if (slideTimer <= 0) {
+  const handleVoiceCommand = useCallback((command) => {
+    if (command.intent === 'clear') {
+      setVoiceBurst(null);
+      return;
+    }
+
+    if (command.intent === 'projects') {
+      setActiveTab('projects');
+      setSlideTimer(15);
+    }
+
+    if (command.intent === 'planning' || command.intent === 'fenix') {
+      setActiveTab('fenix');
+      setSlideTimer(15);
+    }
+
+    if (command.intent === 'next') {
       setActiveTab(prev => (prev === 'fenix' ? 'projects' : 'fenix'));
       setSlideTimer(15);
     }
-  }, [slideTimer]);
+
+    setVoiceBurst({
+      ...command,
+      receivedAt: Date.now()
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isControlRoute) return undefined;
+
+    const events = new EventSource('/api/events');
+
+    events.onopen = () => setVoiceStatus('online');
+    events.onerror = () => setVoiceStatus('offline');
+    events.addEventListener('command', (event) => {
+      try {
+        handleVoiceCommand(JSON.parse(event.data));
+      } catch {
+        setVoiceStatus('offline');
+      }
+    });
+
+    return () => events.close();
+  }, [handleVoiceCommand, isControlRoute]);
+
+  const clearVoiceBurst = useCallback(() => {
+    setVoiceBurst(null);
+  }, []);
+
+  if (isControlRoute) {
+    return <VoiceController />;
+  }
 
   const progressPercent = Math.min(100, Math.max(0, ((15 - slideTimer) / 15) * 100));
 
@@ -75,30 +135,36 @@ export default function App() {
             </button>
           </div>
 
-          {/* Projection Status Badge */}
-          <div
-            style={{
-              background: 'var(--bg-inner)',
-              border: '1px solid var(--border-subtle)',
-              padding: '8px 16px',
-              borderRadius: '10px',
-              fontSize: '0.95rem',
-              color: 'var(--text-secondary)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}
-          >
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Monitor size={20} color="var(--orange-primary)" />
-              <span style={{ position: 'absolute', top: -1, right: -1, width: 7, height: 7, borderRadius: '50%', background: 'var(--orange-primary)' }}></span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className={`voice-status-badge ${voiceStatus}`}>
+              <Radio size={18} />
+              <span>Voz LAN</span>
             </div>
-            <div>
-              <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.1 }}>
-                Proyección TV
+            {/* Projection Status Badge */}
+            <div
+              style={{
+                background: 'var(--bg-inner)',
+                border: '1px solid var(--border-subtle)',
+                padding: '8px 16px',
+                borderRadius: '10px',
+                fontSize: '0.95rem',
+                color: 'var(--text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}
+            >
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Monitor size={20} color="var(--orange-primary)" />
+                <span style={{ position: 'absolute', top: -1, right: -1, width: 7, height: 7, borderRadius: '50%', background: 'var(--orange-primary)' }}></span>
               </div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
-                <Clock size={13} color="var(--orange-primary)" /> Rotación: <strong style={{ color: 'var(--orange-primary)', fontFamily: 'var(--font-mono)' }}>{slideTimer}s</strong>
+              <div>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.1 }}>
+                  Proyección TV
+                </div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
+                  <Clock size={13} color="var(--orange-primary)" /> Rotación: <strong style={{ color: 'var(--orange-primary)', fontFamily: 'var(--font-mono)' }}>{slideTimer}s</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -112,10 +178,16 @@ export default function App() {
             <ProjectsBoard projects={projects} />
           )}
         </main>
+
+        {voiceBurst ? (
+          <VoiceOverlay
+            key={`${voiceBurst.id}-${voiceBurst.receivedAt}`}
+            command={voiceBurst}
+            onDone={clearVoiceBurst}
+          />
+        ) : null}
       </div>
     </div>
   );
 }
-
-
 
