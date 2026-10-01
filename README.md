@@ -1,7 +1,7 @@
 ## Despliegue con Docker
 
 ### Usando Docker Compose (Recomendado)
-Para construir la imagen y levantar el contenedor en segundo plano:
+Para construir la imagen y levantar el contenedor en segundo plano: a
 
 ```bash
 docker compose up -d --build
