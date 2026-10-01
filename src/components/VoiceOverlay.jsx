@@ -40,6 +40,9 @@ export default function VoiceOverlay({ command, onDone }) {
         {command.phrase ? (
           <div className="voice-command-phrase">"{command.phrase}"</div>
         ) : null}
+        {command.reply ? (
+          <div className="voice-command-reply">{command.reply}</div>
+        ) : null}
       </div>
     </div>
   );

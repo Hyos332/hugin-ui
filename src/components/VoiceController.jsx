@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronRight, Eraser, Flame, LayoutGrid, Mic, Radio, Send, Sparkles, Zap } from 'lucide-react';
-import { VOICE_COMMANDS, matchVoiceCommand } from '../lib/voiceCommands';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronRight, Eraser, Flame, LayoutGrid, Mic, MicOff, Radio, Send, Sparkles, Volume2, Zap } from 'lucide-react';
+import { VOICE_COMMANDS, matchVoiceCommand, withAssistantReply } from '../lib/voiceCommands';
 
 const iconMap = {
   wake: Zap,
@@ -18,6 +18,9 @@ export default function VoiceController() {
   const [transcript, setTranscript] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [lastCommand, setLastCommand] = useState(null);
+  const [micPermission, setMicPermission] = useState('unknown');
+  const [diagnostic, setDiagnostic] = useState('');
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [status, setStatus] = useState('Listo');
 
   const SpeechRecognition = useMemo(() => {
@@ -25,8 +28,105 @@ export default function VoiceController() {
     return window.SpeechRecognition || window.webkitSpeechRecognition || null;
   }, []);
 
+  const hasMicrophoneApi = useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return Boolean(navigator.mediaDevices?.getUserMedia);
+  }, []);
+
+  const isSecureControl = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.isSecureContext || ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  }, []);
+
+  const supportDiagnostic = SpeechRecognition
+    ? ''
+    : 'Este navegador no trae reconocimiento de voz. Prueba Chrome en Android o Chrome/Edge en PC.';
+
+  const speakReply = useCallback((reply) => {
+    if (!voiceEnabled || typeof window === 'undefined' || !window.speechSynthesis || !reply) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(reply);
+    utterance.lang = 'es-ES';
+    utterance.rate = 1.04;
+    utterance.pitch = 0.92;
+    window.speechSynthesis.speak(utterance);
+  }, [voiceEnabled]);
+
+  async function unlockMicrophone() {
+    setDiagnostic('');
+
+    if (!isSecureControl) {
+      setMicPermission('blocked');
+      setStatus('Necesita HTTPS');
+      setDiagnostic('En movil, el micro solo funciona en HTTPS. En PC tambien funciona si abres /control desde localhost.');
+      return false;
+    }
+
+    if (!hasMicrophoneApi) {
+      setMicPermission('blocked');
+      setStatus('Micro no disponible');
+      setDiagnostic('Este navegador no expone acceso al microfono. Prueba Chrome o Edge.');
+      return false;
+    }
+
+    try {
+      setStatus('Pidiendo permiso');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop());
+      setMicPermission('granted');
+      setStatus('Micro listo');
+      return true;
+    } catch (error) {
+      setMicPermission('blocked');
+      setStatus('Permiso denegado');
+      setDiagnostic(error?.name === 'NotAllowedError'
+        ? 'Has denegado el micro. Activalo en permisos del navegador para este sitio.'
+        : 'No pude abrir el microfono del dispositivo.');
+      return false;
+    }
+  }
+
+  const sendCommand = useCallback(async (command) => {
+    const commandWithReply = withAssistantReply(command);
+    const payload = {
+      ...commandWithReply,
+      source: 'hugin-control'
+    };
+
+    setStatus('Enviando');
+    const response = await fetch('/api/command', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      setStatus('Sin conexión');
+      return;
+    }
+
+    setLastCommand(payload);
+    speakReply(payload.reply);
+    setStatus('Enviado');
+    window.setTimeout(() => setStatus('Listo'), 1200);
+  }, [speakReply]);
+
+  const sendPhrase = useCallback((rawPhrase) => {
+    const trimmedPhrase = rawPhrase.trim();
+    if (!trimmedPhrase) return;
+    const command = matchVoiceCommand(trimmedPhrase);
+    sendCommand(command);
+    setPhrase('');
+    setTranscript('');
+  }, [sendCommand]);
+
   useEffect(() => {
-    if (!SpeechRecognition) return undefined;
+    if (!SpeechRecognition) {
+      return undefined;
+    }
 
     const recognition = new SpeechRecognition();
     recognition.lang = 'es-ES';
@@ -52,8 +152,16 @@ export default function VoiceController() {
       }
     };
 
-    recognition.onerror = () => {
-      setStatus('Micrófono no disponible');
+    recognition.onerror = (event) => {
+      const errorMessages = {
+        'not-allowed': 'El navegador bloqueo el micro. Revisa permisos del sitio.',
+        'audio-capture': 'No encuentro ningun microfono activo.',
+        network: 'El reconocimiento de voz necesita conexion del navegador.',
+        'no-speech': 'No escuche nada. Dale otra vez y habla cerquita.'
+      };
+
+      setStatus('Micro bloqueado');
+      setDiagnostic(errorMessages[event.error] || 'No pude arrancar el reconocimiento de voz.');
       setIsListening(false);
     };
 
@@ -68,45 +176,14 @@ export default function VoiceController() {
       recognition.stop();
       recognitionRef.current = null;
     };
-  }, [SpeechRecognition]);
+  }, [SpeechRecognition, sendPhrase]);
 
-  async function sendCommand(command) {
-    const payload = {
-      ...command,
-      source: 'hugin-control'
-    };
-
-    setStatus('Enviando');
-    const response = await fetch('/api/command', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      setStatus('Sin conexión');
-      return;
-    }
-
-    setLastCommand(payload);
-    setStatus('Enviado');
-    window.setTimeout(() => setStatus('Listo'), 1200);
-  }
-
-  function sendPhrase(rawPhrase) {
-    const trimmedPhrase = rawPhrase.trim();
-    if (!trimmedPhrase) return;
-    const command = matchVoiceCommand(trimmedPhrase);
-    sendCommand(command);
-    setPhrase('');
-    setTranscript('');
-  }
-
-  function toggleListening() {
+  async function toggleListening() {
     if (!recognitionRef.current) {
       setStatus('Micrófono no disponible');
+      if (!SpeechRecognition) {
+        setDiagnostic('Tu navegador no soporta SpeechRecognition. Usa Chrome/Edge o escribe la frase abajo.');
+      }
       return;
     }
 
@@ -115,7 +192,16 @@ export default function VoiceController() {
       return;
     }
 
-    recognitionRef.current.start();
+    if (micPermission !== 'granted') {
+      const unlocked = await unlockMicrophone();
+      if (!unlocked) return;
+    }
+
+    try {
+      recognitionRef.current.start();
+    } catch {
+      setStatus('Ya estaba escuchando');
+    }
   }
 
   return (
@@ -136,12 +222,31 @@ export default function VoiceController() {
         </header>
 
         <section className="voice-pad">
-          <button className={`mic-orb ${isListening ? 'active' : ''}`} type="button" onClick={toggleListening}>
-            <Mic size={54} strokeWidth={2.2} />
+          <button className={`mic-orb ${isListening ? 'active' : ''} ${micPermission === 'blocked' ? 'blocked' : ''}`} type="button" onClick={toggleListening}>
+            {micPermission === 'blocked' ? <MicOff size={54} strokeWidth={2.2} /> : <Mic size={54} strokeWidth={2.2} />}
           </button>
 
           <div className="transcript-box">
-            <span>{transcript || lastCommand?.phrase || 'Hugin espera comando'}</span>
+            <span>{transcript || lastCommand?.reply || lastCommand?.phrase || 'Toca el micro y acepta el permiso'}</span>
+          </div>
+
+          {diagnostic || supportDiagnostic ? (
+            <div className="mic-diagnostic">{diagnostic || supportDiagnostic}</div>
+          ) : null}
+
+          <div className="control-actions">
+            <button type="button" onClick={unlockMicrophone}>
+              <Mic size={18} />
+              Activar micro
+            </button>
+            <button
+              className={voiceEnabled ? 'active' : ''}
+              type="button"
+              onClick={() => setVoiceEnabled(prev => !prev)}
+            >
+              <Volume2 size={18} />
+              Voz Hugin
+            </button>
           </div>
         </section>
 

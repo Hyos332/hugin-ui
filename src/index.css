@@ -578,6 +578,18 @@ html, body {
   max-width: 760px;
 }
 
+.voice-command-reply {
+  margin-top: 18px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: clamp(1.05rem, 1.5vw, 1.42rem);
+  font-weight: 800;
+  max-width: 820px;
+}
+
 .control-shell {
   min-height: 100vh;
   width: 100vw;
@@ -687,6 +699,13 @@ html, body {
   box-shadow: 0 0 0 18px rgba(74, 222, 128, 0.1), 0 30px 70px rgba(20, 184, 166, 0.38);
 }
 
+.mic-orb.blocked {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.22), transparent 22%),
+    linear-gradient(145deg, #f43f5e, #f59e0b);
+  border-color: rgba(244, 63, 94, 0.72);
+}
+
 .transcript-box {
   min-height: 68px;
   width: 100%;
@@ -700,6 +719,47 @@ html, body {
   text-align: center;
   font-size: 1.2rem;
   font-weight: 800;
+}
+
+.mic-diagnostic {
+  width: 100%;
+  border: 1px solid rgba(245, 158, 11, 0.42);
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #fcd34d;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.control-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.control-actions button {
+  height: 46px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.control-actions button.active {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.55);
+  background: rgba(34, 197, 94, 0.12);
 }
 
 .command-form {
@@ -878,6 +938,9 @@ html, body {
   .command-grid {
     grid-template-columns: 1fr;
   }
-}
 
+  .control-actions {
+    grid-template-columns: 1fr;
+  }
+}
 

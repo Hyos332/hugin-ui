@@ -1,5 +1,7 @@
 import { createServer } from 'node:http';
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createServer as createHttpsServer } from 'node:https';
+import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,6 +10,11 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const distDir = path.join(rootDir, 'dist');
 const port = Number(process.env.PORT || 80);
+const httpsPort = Number(process.env.HTTPS_PORT || 443);
+const enableHttps = process.env.ENABLE_HTTPS === 'true';
+const certDir = process.env.CERT_DIR || '/tmp/hugin-certs';
+const keyPath = process.env.SSL_KEY_PATH || path.join(certDir, 'hugin.key');
+const certPath = process.env.SSL_CERT_PATH || path.join(certDir, 'hugin.crt');
 
 const clients = new Set();
 
@@ -70,6 +77,7 @@ async function handleCommand(req, res) {
       message: body.message || body.phrase || 'HUGIN ONLINE',
       phrase: body.phrase || '',
       theme: body.theme || 'cyan',
+      reply: body.reply || '',
       source: body.source || 'control',
       createdAt: new Date().toISOString()
     };
@@ -157,7 +165,7 @@ async function serveStatic(req, res, url) {
   createReadStream(filePath).pipe(res);
 }
 
-const server = createServer(async (req, res) => {
+async function requestHandler(req, res) {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
 
   if (req.method === 'GET' && url.pathname === '/api/health') {
@@ -186,7 +194,54 @@ const server = createServer(async (req, res) => {
   }
 
   await serveStatic(req, res, url);
-});
+}
+
+function ensureLocalCertificate() {
+  if (existsSync(keyPath) && existsSync(certPath)) {
+    return;
+  }
+
+  mkdirSync(certDir, { recursive: true });
+
+  const opensslConfigPath = path.join(certDir, 'openssl.cnf');
+  const opensslConfig = [
+    '[req]',
+    'default_bits = 2048',
+    'prompt = no',
+    'default_md = sha256',
+    'x509_extensions = v3_req',
+    'distinguished_name = dn',
+    '',
+    '[dn]',
+    'CN = Hugin Local',
+    '',
+    '[v3_req]',
+    'subjectAltName = @alt_names',
+    '',
+    '[alt_names]',
+    'DNS.1 = localhost',
+    'IP.1 = 127.0.0.1'
+  ].join('\n');
+
+  writeFileSync(opensslConfigPath, opensslConfig);
+  execFileSync('openssl', [
+    'req',
+    '-x509',
+    '-nodes',
+    '-days',
+    '3650',
+    '-newkey',
+    'rsa:2048',
+    '-keyout',
+    keyPath,
+    '-out',
+    certPath,
+    '-config',
+    opensslConfigPath
+  ], { stdio: 'ignore' });
+}
+
+const server = createServer(requestHandler);
 
 setInterval(() => {
   for (const client of clients) {
@@ -197,3 +252,15 @@ setInterval(() => {
 server.listen(port, '0.0.0.0', () => {
   console.log(`Hugin server listening on http://0.0.0.0:${port}`);
 });
+
+if (enableHttps) {
+  ensureLocalCertificate();
+  const httpsServer = createHttpsServer({
+    key: readFileSync(keyPath),
+    cert: readFileSync(certPath)
+  }, requestHandler);
+
+  httpsServer.listen(httpsPort, '0.0.0.0', () => {
+    console.log(`Hugin HTTPS listening on https://0.0.0.0:${httpsPort}`);
+  });
+}

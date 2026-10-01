@@ -16,6 +16,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+RUN apk add --no-cache openssl
+
 COPY --from=build /app/dist ./dist
 COPY server ./server
 COPY package*.json ./
